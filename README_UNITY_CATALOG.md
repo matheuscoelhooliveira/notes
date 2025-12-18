@@ -3,7 +3,7 @@
 ![alt text](UNITY_CATALOG_IMAGES/image-5-v.png)
 
 
-### Curso: Udemy - Azure Databricks end to end project with Unity Catalog CICD
+### Curso: Udemy - Azure Databricks end to end project with Unity Catalog CI/CD
 
 <p align="center">
   <blockquote>
@@ -157,6 +157,8 @@ Cluster policy é util para controlar a capacidade dos usuários de configurar o
 
 * Análise o terraform para verificar como criar policy por meio de IaC
 
+* Você não pode usar instâncias spot para o nó do driver em um cluster do Azure Databricks, o que se aplica diretamente a clusters de nó único (que consistem apenas no nó do driver). 
+
 # Cluster Pools
 
 Podem ser utilizados para limitar a criação de usuários a um determinado tipo de instância ou para determinado grupo,
@@ -174,3 +176,88 @@ No cluster policy eu posso criar uma definição por exemplo para meus usuários
 2. Atribuo no value do Json
 
 ![alt text](UNITY_CATALOG_IMAGES/image-7_k.png)
+
+## Padrões de workspace para o databricks
+
+Em geral, você pode considerar a criação de um catálogo para cada ambiente, no qual cada 
+ambiente pode ser criado em um único catálogo. Ou seja, pode haver um catálogo de desenvolvimento, um catálogo de UAT e um catálogo de produção.
+
+![alt text](UNITY_CATALOG_IMAGES/image_w.png)
+
+* Onde P1, P2 ... significam projetos/workspaces
+
+* OBS: Workspace Admin não possuem acessos para criar catálogos por default, então é necessário atribuir essa permissão. Só um ponto de atenção no terraform talvez na primeira execução de erro na aplicação de policy no grupo developer, onde vai ser necessário anexar o grupo ao workspace antes de executar novamente, pode dar algum erro novamente, mas aguarde uns minutos de o terraform plan que vai ser sucesso.
+
+Para um usuário trabalhar com o catálogo e necessário dar a permissão `USE CATALOG` ela permite que os usuários visualizem o catalógo apesar de não realizar nenhuma ação.
+
+Query para ver informções do metastore como exemplo, onde fica as tabelas armazenadas por padrão (managed).
+
+`SELECT
+  *
+FROM
+  system.information_schema.metastores`
+
+## Instalação de libs externas 
+
+Para instalação de bibliotecas de modo nativo no cluster você pode utilizar cluster policy que nem foi realizado no terraform. Porém a databricks por segurança restringe a esse tipo de instalação e para isso foi criado a folder securiy do terraform que libera o acesso para instação da lib `maven`. 
+
+Porém para aplicar isso no terraform é necessário que o User tenha a permissão `MANAGE ALLOWLIST`. 
+
+Para fazer isso vá até catalógo e clique no simbolo da ingrenagem e logo após clique no nome do metastore.
+
+![alt text](UNITY_CATALOG_IMAGES/image-1_w.png)
+
+
+Na aba permissões adicione a permissão `MANAGE ALLOWLIST`:
+
+![alt text](UNITY_CATALOG_IMAGES/image-2_w.png)
+
+* Obs: A lib spark-measure só funciona no modo cluster single-user do databricks.
+
+## Storage Credential & External Location
+
+O Unity Catalog acessa o armazenamento principal (onde ficam as **tabelas gerenciadas**) por meio do **Databricks Access Connector**, usando uma **identidade gerenciada** configurada na criação do **Metastore**. Esse acesso vale apenas para o **contêiner raiz** definido nesse momento.
+
+Em cenários reais, é comum precisar acessar **outras contas de armazenamento** ou **outros contêineres** (inclusive na mesma conta). Esses locais **não são reconhecidos automaticamente** pelo Unity Catalog e, sem configuração adicional, geram erros de acesso.
+
+Para resolver isso, o Unity Catalog introduz dois novos objetos:
+
+### 🔹 Credencial de Armazenamento (Storage Credential)
+- Responsável pela **autenticação** no armazenamento.
+- Armazena a identidade usada para acesso (preferencialmente **identidade gerenciada** via Databricks Access Connector, ou alternativamente um **Service Principal**).
+- Define **“quem pode acessar”** o storage.
+
+### 🔹 Local Externo (External Location)
+- Funciona como um **ponteiro** para um caminho específico no armazenamento (ex: um contêiner).
+- Usa uma **credencial de armazenamento** para obter acesso.
+- Define **“onde estão os dados”**.
+
+### 🔹 Diferença Conceitual
+- **Local Externo** → guarda o **caminho** do armazenamento.
+- **Credencial de Armazenamento** → guarda a **autenticação/acesso**.
+- Ambos são necessários: **saber o caminho não é suficiente sem permissão**.
+
+### 🔹 Benefício Principal
+Esses dois objetos permitem que o Unity Catalog forneça **controle de acesso centralizado e refinado**, possibilitando acessar múltiplos storages ou contêineres de forma segura e sem credenciais embutidas em notebooks.
+
+> A Databricks recomenda fortemente o uso de **identidades gerenciadas**, evitando segredos e autenticação manual.
+
+![alt text](UNITY_CATALOG_IMAGES/image-3_w.png)
+
+1. Primeira etapa é criar uma credential
+
+![alt text](UNITY_CATALOG_IMAGES/image-4_w.png)
+
+2. Selecione service credential
+
+![alt text](UNITY_CATALOG_IMAGES/image-5_w.png)
+
+3. De um nome (Credential Name - Modulo no terraform chamado storage_credential) e o Acess Connector ID é o valor do Resource ID do Databricks Acess Conector. Lembrando que é nessário dar a role de contributor para storage account que você deseja acessar.
+
+4. Para criar uma external location apenas clique em catálogo e External Locations. Irá aparece metastore_root_location que e o local das suas tabelas gerenciadas definida no metastore e você pode criar uma nova external location se necessário utilizando a credential criada anteriormente.
+
+![alt text](UNITY_CATALOG_IMAGES/image-6_w.png)
+
+![alt text](UNITY_CATALOG_IMAGES/image-7_w.png)
+
+* Obs: A crição via terraform do external location pode ser visualizado no modulo external_location.
