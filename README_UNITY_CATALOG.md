@@ -272,7 +272,7 @@ Portanto, ao criar um novo container — ainda que eu possua permissão de Contr
 ```
 A eliminação de uma tabela gerenciada específica também eliminará os dados, mas no catálogo do Unity, os dados subjacentes estarão presentes por 30 dias nesse armazenamento em nuvem, que é o armazenamento do Azure Data Lake.
 ```
-![alt text](image.png)
+![alt text](UNITY_CATALOG_IMAGES/image_xpto.png)
 
 Comando que demonstrar suas external locations:
 
@@ -281,3 +281,5 @@ Comando que demonstrar suas external locations:
 Comando para descrever sobre sua external locations:
 
 ` DESCRIBE EXTERNAL LOCATIONS NOME_DA_EXTERNAL_LOCATION; `
+
+* Você pode usar o comando UNDROP para recuperar tabelas gerenciadas excluídas em até 7 dias. O Unity Catalog oferece suporte ao comando UNDROP TABLE para recuperar tabelas gerenciadas excluídas em até 7 dias. Após esse período, o Databricks marca os dados subjacentes para exclusão do seu tenant na nuvem e remove os arquivos durante a manutenção automatizada da tabela. Uso: UNDROP <Catálogo>.<Esquema>.<NomeDaTabela>
