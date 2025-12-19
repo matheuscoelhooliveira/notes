@@ -261,3 +261,23 @@ Esses dois objetos permitem que o Unity Catalog forneça **controle de acesso ce
 ![alt text](UNITY_CATALOG_IMAGES/image-7_w.png)
 
 * Obs: A crição via terraform do external location pode ser visualizado no modulo external_location.
+
+* Obs: Mesmo criando uma external location para uma determinada storage account e atribuindo as permissões necessárias, a external location é definida no nível do container.
+Portanto, ao criar um novo container — ainda que eu possua permissão de Contributor na storage account — será necessário criar uma nova external location para que esse container possa ser acessado.
+
+* Obs: Se eu quiser via console permitir que um usuário utilize um cluster shared preciso ir na parte de permissões do cluster, lá eu posso definir a nível grupo quem pode acessar esse cluster.
+
+![alt text](UNITY_CATALOG_IMAGES/image_zz.png)
+
+```
+A eliminação de uma tabela gerenciada específica também eliminará os dados, mas no catálogo do Unity, os dados subjacentes estarão presentes por 30 dias nesse armazenamento em nuvem, que é o armazenamento do Azure Data Lake.
+```
+![alt text](image.png)
+
+Comando que demonstrar suas external locations:
+
+` SHOW EXTERNAL LOCATIONS; `
+
+Comando para descrever sobre sua external locations:
+
+` DESCRIBE EXTERNAL LOCATIONS NOME_DA_EXTERNAL_LOCATION; `
