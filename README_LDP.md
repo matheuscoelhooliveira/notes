@@ -4,14 +4,14 @@
 
 O **Lake Flow Declarative Pipelines (LDP)** (anteriormente conhecido como *Delta Live Tables* ou DLT) é uma estrutura de ETL baseada no Apache Spark projetada para criar pipelines de dados confiáveis e de fácil manutenção.
 
-![alt text](image-6.png)
-![alt text](image-4.png)
+![alt text](LDP_IMAGES/image-6.png)
+![alt text](LDP_IMAGES/image-4.png)
 
 Diferente da abordagem imperativa padrão do Spark, o LDP utiliza um modelo **declarativo**: você define o resultado desejado das transformações (o "o quê") e o framework gerencia a complexidade da execução, orquestração e infraestrutura (o "como").
 
 > **Nota:** A Databricks abriu o código-fonte desta solução, integrando-a ao ecossistema Apache Spark sob o nome **Spark Declarative Pipelines**.
 
-![alt text](image.png)
+![alt text](LDP_IMAGES/image.png)
 
 ---
 
@@ -23,9 +23,9 @@ Diferente da abordagem imperativa padrão do Spark, o LDP utiliza um modelo **de
 * **Operações Avançadas Simplificadas:** Suporte nativo e facilitado para CDC (Change Data Capture), SCD Tipo 2 e verificações de Qualidade de Dados (Expectations).
 * **Validação:** Suporte a "Dry Run" para validar a lógica do pipeline sem processar dados.
 
-![alt text](image-1.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
+![alt text](LDP_IMAGES/image-1.png)
+![alt text](LDP_IMAGES/image-2.png)
+![alt text](LDP_IMAGES/image-3.png)
 ---
 
 ## 🧱 Tipos de Objetos no LDP
@@ -62,7 +62,7 @@ CREATE OR REFRESH STREAMING TABLE nome_tabela AS SELECT ...
 * **Arquivos:** Migração de base exclusiva em Notebooks para suporte a arquivos de script (`.py`, `.sql`).
 * **Validação:** Introdução do conceito de execução de teste ("Dry Run") para validação de código. O DLT era baseado em notebooks e tinhamos a opção de validar o código-fonte usando o botão de validação no DLT. Por outro lado agora se baseia em arquivos de script com extensão .py, SQL e o dry-run ajuda a realizar a validação seca para o código-fonte do nosso pipeline sem atualizar nenhum dado.
 
-![alt text](image-5.png)
+![alt text](LDP_IMAGES/image-5.png)
 
 * **Sintaxe:** Evolução dos decoradores e comandos para maior clareza entre objetos de streaming e estáticos.
 
@@ -87,12 +87,12 @@ Refatorar o código PySpark original do projeto "Bookstore" para o estilo declar
 * **Nome:** `Bookstore Pro Pipeline`.
 * **Catálogo/Schema:** `professional`.
 
-![alt text](image-7.png)
-![alt text](image-8.png)
+![alt text](LDP_IMAGES/image-7.png)
+![alt text](LDP_IMAGES/image-8.png)
 
 Permite visualizar tabelas e performance:
 
-![alt text](image-9.png)
+![alt text](LDP_IMAGES/image-9.png)
 
 ### Organização de Arquivos
 
@@ -101,12 +101,12 @@ O LDP sugere uma estrutura de pastas para organizar o código:
 * **`transformations/`**: Pasta padrão para os scripts do pipeline (código-fonte ativo).
 * **`explorations/`**: Pasta sugerida para Notebooks auxiliares (ex: análise de dados) que **não** são executados como parte do fluxo do pipeline.
 
-![alt text](image-10.png)
-![alt text](image-11.png)
+![alt text](LDP_IMAGES/image-10.png)
+![alt text](LDP_IMAGES/image-11.png)
 
 Você pode incluir os arquivos do exploration no pipeline source code:
 
-![alt text](image-12.png)
+![alt text](LDP_IMAGES/image-12.png)
 
 ### Configurações de Execução (Settings)
 
@@ -115,15 +115,15 @@ Você pode incluir os arquivos do exploration no pipeline source code:
 * *Continuous:* Executa continuamente (ex: a cada 2 segundos) para latência mínima.
 
 Settings -> Pipeline Mode
-![alt text](image-13.png)
+![alt text](LDP_IMAGES/image-13.png)
 
 * **Parâmetros:** Adição da chave `dataset_path` para definir o diretório de origem dos dados. (Settings -> Configuration)
 
-![alt text](image-14.png)
+![alt text](LDP_IMAGES/image-14.png)
 
 * **Event Logs:** Configuração (em *Advanced Settings*) de uma tabela para armazenar logs de execução do pipeline.
 
-![alt text](image-15.png)
+![alt text](LDP_IMAGES/image-15.png)
 
 ---
 
@@ -151,7 +151,7 @@ Utiliza o Auto Loader (`cloudFiles`) para ingestão incremental.
 * `delta.appendOnly = true`: Otimiza para tabelas que só recebem inserções, desabilitando updates e deletes para a tabela bronze.
 * `pipelines.reset.allowed = false`: **Proteção de Dados.** Impede que esta tabela seja apagada/zerada se for solicitado um "Full Refresh" do pipeline (essencial para camada Bronze onde a retenção da fonte pode ser curta).
 
-![alt text](image-16.png)
+![alt text](LDP_IMAGES/image-16.png)
 
 ```python
 @dp.table(
@@ -212,8 +212,8 @@ def country_lookup():
 * Habilita *retries* automáticos para falhas transitórias (ex: erro de inicialização, vazamento de memória).
 
 Se quiser alternar de um modo para outro:
-![alt text](image-17.png)
-![alt text](image-18.png)
+![alt text](LDP_IMAGES/image-17.png)
+![alt text](LDP_IMAGES/image-18.png)
  
 ---
 
@@ -223,23 +223,23 @@ Se quiser alternar de um modo para outro:
 
 As **Expectativas** são restrições (constraints) de validade aplicadas aos dados à medida que fluem pelo pipeline ETL. Elas funcionam como "Unit Tests" para dados, garantindo integridade e confiabilidade.
 
-![alt text](image-20.png)
+![alt text](LDP_IMAGES/image-20.png)
 
 * Definem condições booleanas que cada registro deve atender.
 * Todas as violações são rastreadas e relatadas nas **métricas** do pipeline.
 
-![alt text](image-21.png)
+![alt text](LDP_IMAGES/image-21.png)
 
 * Podem ser aplicadas em tabelas e views usando SQL ou Python.
 * Por default registros que violam alguma constrains são mantidas na tabela.
 
-![alt text](image-22.png)
+![alt text](LDP_IMAGES/image-22.png)
 
 ## 🚦 Ações de Violação (Policy)
 
 Você pode definir o que acontece quando um registro falha na validação. Existem três níveis de severidade:
 
-![alt text](image-19.png)
+![alt text](LDP_IMAGES/image-19.png)
 
 ---
 
@@ -253,7 +253,7 @@ Você pode definir o que acontece quando um registro falha na validação. Exist
 | **Drop** | `@dlt.expect_or_drop("descrição", "condição")` | `CONSTRAINT nome EXPECT (condição) ON VIOLATION DROP ROW` |
 | **Fail** | `@dlt.expect_or_fail("descrição", "condição")` | `CONSTRAINT nome EXPECT (condição) ON VIOLATION FAIL UPDATE` |
 
-![alt text](image-24.png)
+![alt text](LDP_IMAGES/image-24.png)
 
 ### 1. `expect_or_drop` (Individual)
 
@@ -307,7 +307,7 @@ No Python, é possível passar um **dicionário** de regras para aplicar várias
 
 ## 📝 Exemplo Prático
 
-![alt text](image-23.png)
+![alt text](LDP_IMAGES/image-23.png)
 
 Aqui está o resumo estruturado para o módulo de **Qualidade de Dados na Camada Prata**, seguindo o padrão README.
 
@@ -457,17 +457,17 @@ Quando você declara uma tabela usando Auto CDC, o LDP cria dois objetos sob o c
 O comando base é `CREATE STREAM ... AS AUTO CDC`.
 *Nota: A tabela de streaming de destino já deve ter sido criada antes da execução deste comando.*
 
-![alt text](image-26.png)
+![alt text](LDP_IMAGES/image-26.png)
 
 ### Parâmetros Principais
 
-![alt text](image-25.png)
+![alt text](LDP_IMAGES/image-25.png)
 
 ### Sintaxe Python
 
 Utiliza a função `create_auto_cdc_stream`. Os parâmetros lógicos são os mesmos do SQL (keys, sequence, etc.).
 
-![alt text](image-27.png)
+![alt text](LDP_IMAGES/image-27.png)
 
 ---
 
@@ -476,8 +476,8 @@ Utiliza a função `create_auto_cdc_stream`. Os parâmetros lógicos são os mes
 * **APPLY CHANGES INTO:** É a sintaxe antiga (do Delta Live Tables original) para fazer CDC.
 * **Status Atual:** Ainda é suportada para retrocompatibilidade e **pode cair no exame atual**, mas a Databricks recomenda fortemente o uso das novas **APIs de Auto CDC**.
 
-![alt text](image-28.png)
-![alt text](image-29.png)
+![alt text](LDP_IMAGES/image-28.png)
+![alt text](LDP_IMAGES/image-29.png)
 ---
 Aqui está o resumo estruturado para o módulo final do pipeline "Bookstore", cobrindo **Auto CDC**, **Camada Dourada (Gold)** e **Mistura de Python/SQL**, seguindo o padrão README.
 
